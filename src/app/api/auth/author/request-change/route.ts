@@ -1,4 +1,4 @@
-import { connectDB } from "@/lib/mongodb";
+import connectDB from "@/lib/mongodb";
 import ChangeRequest from "@/models/ChangeRequest";
 
 export async function POST(req: Request) {
