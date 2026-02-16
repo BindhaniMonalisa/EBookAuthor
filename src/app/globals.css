@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Artistic Peacock Palette */
+  --color-peacock-light: #00a8a8;
+  --color-peacock-medium: #008080;
+  --color-peacock-dark: #004080;
+  --color-peacock-navy: #000040;
+  --color-peacock-gold: #d4af37;
+  --color-peacock-emerald: #50c878;
+
+  /* KDP Inspired Neutrals */
+  --color-kdp-orange: #FF9900;
+  --color-kdp-navy: #232F3E;
+  --color-kdp-bg: #FFFFFF;
+  --color-kdp-light-bg: #F3F3F3;
+  --color-kdp-border: #DDD;
+}
+
+:root {
+  --peacock-bg: #ffffff;
+  /* KDP Clean White */
+  --peacock-text: #232F3E;
+  /* KDP Dark Navy for Text */
+  --selection-bg: #d4af37;
+}
+
+body {
+  background-color: var(--peacock-bg);
+  color: var(--peacock-text);
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  /* More artistic but clean font */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom utility for blended theme */
+.peacock-gradient {
+  background: linear-gradient(135deg, #008080 0%, #004080 100%);
+  position: relative;
+}
+
+.peacock-gradient-glass {
+  background: linear-gradient(135deg, rgba(0, 128, 128, 0.4) 0%, rgba(0, 64, 128, 0.4) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+
+.peacock-gradient::before,
+.peacock-gradient-glass::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top left, rgba(212, 175, 55, 0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(25px) saturate(200%);
+  -webkit-backdrop-filter: blur(25px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.peacock-button {
+  background-color: #008080;
+  color: white;
+  padding: 0.75rem 1.75rem;
+  /* Larger, KDP-style padding */
+  border-radius: 9999px;
+  /* Artistic rounded look */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.peacock-button:hover {
+  background-color: #004080;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.card-artistic {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  padding: 2rem;
+  transition: all 0.3s;
+}
+
+.card-artistic:hover {
+  border-color: #008080;
+  box-shadow: 0 20px 25px -5px rgba(0, 128, 128, 0.05);
+  transform: translateY(-4px);
+}
