@@ -51,7 +51,7 @@ export default function Home() {
       {/* Be Your Own Publisher Section */}
       <section className="py-24 bg-gray-50/50">
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center gap-16">
-          <div className="flex-1 relative">
+          <div className="hidden md:block flex-1 relative">
             <div className="relative z-10 flex gap-4 -rotate-3 hover:rotate-0 transition-transform duration-500">
               <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=300" className="w-48 h-72 object-cover rounded shadow-2xl" alt="Book 1" />
               <img src="https://plus.unsplash.com/premium_photo-1669652639337-c513cc42ead6?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" className="w-48 h-72 object-cover rounded shadow-2xl -mt-8" alt="Book 2" />

@@ -9,6 +9,7 @@ export default function Navbar() {
     const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userRole, setUserRole] = useState<string | null>(null);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         // Check if auth_token cookie exists
@@ -56,7 +57,7 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="fixed w-full z-50 transition-all duration-300 bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-lg py-4">
+        <nav className="fixed w-full z-[1000] transition-all duration-300 bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-lg py-4">
             <div className="container mx-auto px-6 flex justify-between items-center">
                 <Link href="/" className="text-2xl font-black text-peacock-navy flex items-center gap-3 group">
                     <div className="relative">
@@ -107,7 +108,90 @@ export default function Navbar() {
                         </Link>
                     )}
                 </div>
+
+                {/* Mobile Menu Button */}
+                <div className="md:hidden flex items-center">
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="text-peacock-navy focus:outline-none"
+                    >
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            {isMobileMenuOpen ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                            ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                            )}
+                        </svg>
+                    </button>
+                </div>
             </div>
+
+            {/* Mobile Menu Dropdown */}
+            {isMobileMenuOpen && (
+                <div className="md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-xl border-b border-white/20 shadow-lg py-4 px-6 flex flex-col space-y-4 animate-fadeIn">
+                    <Link
+                        href="/"
+                        className={`text-peacock-navy font-bold hover:text-peacock-medium transition py-2 border-b border-gray-100 ${pathname === "/" ? "text-peacock-medium" : ""}`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        Home
+                    </Link>
+                    <Link
+                        href="/about"
+                        className="text-peacock-navy font-bold hover:text-peacock-medium transition py-2 border-b border-gray-100"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        About
+                    </Link>
+                    <Link
+                        href="/contact"
+                        className="text-peacock-navy font-bold hover:text-peacock-medium transition py-2 border-b border-gray-100"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        Contact
+                    </Link>
+
+                    {isAuthenticated ? (
+                        <>
+                            {userRole === 'author' && (
+                                <Link
+                                    href="/author/dashboard"
+                                    className="text-peacock-navy font-bold hover:text-peacock-medium transition py-2 border-b border-gray-100"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Dashboard
+                                </Link>
+                            )}
+                            {userRole === 'admin' && (
+                                <Link
+                                    href="/admin/dashboard"
+                                    className="text-peacock-navy font-bold hover:text-peacock-medium transition py-2 border-b border-gray-100"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    Admin Panel
+                                </Link>
+                            )}
+                            <button
+                                onClick={() => {
+                                    handleLogout();
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className="peacock-button text-sm w-full py-2.5 shadow-lg hover:shadow-peacock-medium/20 text-center mt-2"
+                            >
+                                Logout
+                            </button>
+                        </>
+                    ) : (
+                        <Link
+                            href="/login"
+                            className="peacock-button text-sm w-full py-2.5 shadow-lg hover:shadow-peacock-medium/20 text-center mt-2"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            Login
+                        </Link>
+                    )}
+                </div>
+            )}
         </nav>
     );
 }
