@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export default function BookResources() {
@@ -18,6 +18,12 @@ export default function BookResources() {
     const [newImageUrl, setNewImageUrl] = useState("");
     const [newDocLabel, setNewDocLabel] = useState("");
     const [newDocUrl, setNewDocUrl] = useState("");
+
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [uploadingPdf, setUploadingPdf] = useState(false);
+
+    const imageFileRef = useRef<HTMLInputElement>(null);
+    const pdfFileRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -50,21 +56,75 @@ export default function BookResources() {
         setSuccess("");
     };
 
+    // --- Image handling ---
     const addImage = () => {
         if (!newImageUrl) return;
         setExtraImages([...extraImages, newImageUrl]);
         setNewImageUrl("");
     };
 
+    const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploadingImage(true);
+        setError("");
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            const res = await fetch("/api/upload", { method: "POST", body: formData });
+            const result = await res.json();
+            if (result.success) {
+                setExtraImages([...extraImages, result.data.url]);
+            } else {
+                setError(result.message || "Image upload failed");
+            }
+        } catch (err) {
+            setError("Image upload failed");
+        } finally {
+            setUploadingImage(false);
+            if (imageFileRef.current) imageFileRef.current.value = "";
+        }
+    };
+
     const removeImage = (index: number) => {
         setExtraImages(extraImages.filter((_, i) => i !== index));
     };
 
+    // --- Document handling ---
     const addDocument = () => {
         if (!newDocLabel || !newDocUrl) return;
         setDocuments([...documents, { label: newDocLabel, url: newDocUrl }]);
         setNewDocLabel("");
         setNewDocUrl("");
+    };
+
+    const handlePdfFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!newDocLabel) {
+            setError("Please enter a document label before uploading a PDF file");
+            if (pdfFileRef.current) pdfFileRef.current.value = "";
+            return;
+        }
+        setUploadingPdf(true);
+        setError("");
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            const res = await fetch("/api/upload", { method: "POST", body: formData });
+            const result = await res.json();
+            if (result.success) {
+                setDocuments([...documents, { label: newDocLabel, url: result.data.url }]);
+                setNewDocLabel("");
+            } else {
+                setError(result.message || "PDF upload failed");
+            }
+        } catch (err) {
+            setError("PDF upload failed");
+        } finally {
+            setUploadingPdf(false);
+            if (pdfFileRef.current) pdfFileRef.current.value = "";
+        }
     };
 
     const removeDocument = (index: number) => {
@@ -94,7 +154,6 @@ export default function BookResources() {
             const result = await res.json();
             if (result.success) {
                 setSuccess("Resources updated successfully!");
-                // Update local books state
                 setBooks(books.map(b => b._id === selectedBookId ? { ...b, extraImages, documents } : b));
             } else {
                 setError(result.message || "Failed to update resources");
@@ -126,26 +185,29 @@ export default function BookResources() {
                 )}
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Book</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Select SKU</label>
                     <select
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-peacock-medium outline-none transition"
                         value={selectedBookId}
                         onChange={(e) => handleBookChange(e.target.value)}
                         disabled={fetching}
                     >
-                        <option value="">-- Choose a book --</option>
+                        <option value="">-- Choose a SKU --</option>
                         {books.map(book => (
-                            <option key={book._id} value={book._id}>{book.title}</option>
+                            <option key={book._id} value={book._id}>{book.sku} — {book.title}</option>
                         ))}
                     </select>
                 </div>
 
+                {/* Extra Images Section */}
                 <div className="border-t pt-8">
                     <h2 className="text-xl font-bold text-peacock-navy mb-4">Extra Images</h2>
+
+                    {/* Paste URL */}
                     <div className="flex gap-4 mb-4">
                         <input
                             type="text"
-                            placeholder="Image URL"
+                            placeholder="Paste Image URL"
                             className="flex-grow px-4 py-3 rounded-xl border border-gray-200 focus:border-peacock-medium outline-none transition"
                             value={newImageUrl}
                             onChange={(e) => setNewImageUrl(e.target.value)}
@@ -157,6 +219,33 @@ export default function BookResources() {
                         >
                             Add
                         </button>
+                    </div>
+
+                    {/* Upload from folder */}
+                    <div className="mb-4">
+                        <input
+                            type="file"
+                            ref={imageFileRef}
+                            accept="image/*"
+                            onChange={handleImageFileUpload}
+                            className="hidden"
+                            id="image-file-upload"
+                        />
+                        <label
+                            htmlFor="image-file-upload"
+                            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-dashed border-peacock-medium/30 text-peacock-medium font-semibold text-sm cursor-pointer hover:bg-peacock-medium/5 transition ${uploadingImage ? "opacity-50 pointer-events-none" : ""}`}
+                        >
+                            {uploadingImage ? (
+                                <>
+                                    <span className="w-4 h-4 border-2 border-peacock-medium/30 border-t-peacock-medium rounded-full animate-spin"></span>
+                                    Uploading...
+                                </>
+                            ) : (
+                                <>
+                                    📁 Upload Image from Folder
+                                </>
+                            )}
+                        </label>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -174,20 +263,27 @@ export default function BookResources() {
                     </div>
                 </div>
 
+                {/* PDF Documents Section */}
                 <div className="border-t pt-8">
                     <h2 className="text-xl font-bold text-peacock-navy mb-4">PDF Documents</h2>
-                    <div className="flex flex-wrap gap-4 mb-4">
+
+                    {/* Label input (shared by URL paste and file upload) */}
+                    <div className="mb-4">
                         <input
                             type="text"
                             placeholder="Document Label (e.g. Chapter 1 Preview)"
-                            className="flex-grow min-w-[200px] px-4 py-3 rounded-xl border border-gray-200 focus:border-peacock-medium outline-none transition"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-peacock-medium outline-none transition"
                             value={newDocLabel}
                             onChange={(e) => setNewDocLabel(e.target.value)}
                         />
+                    </div>
+
+                    {/* Paste URL */}
+                    <div className="flex gap-4 mb-4">
                         <input
                             type="text"
-                            placeholder="PDF URL"
-                            className="flex-grow min-w-[200px] px-4 py-3 rounded-xl border border-gray-200 focus:border-peacock-medium outline-none transition"
+                            placeholder="Paste PDF URL"
+                            className="flex-grow px-4 py-3 rounded-xl border border-gray-200 focus:border-peacock-medium outline-none transition"
                             value={newDocUrl}
                             onChange={(e) => setNewDocUrl(e.target.value)}
                         />
@@ -198,6 +294,36 @@ export default function BookResources() {
                         >
                             Add
                         </button>
+                    </div>
+
+                    {/* Upload from folder */}
+                    <div className="mb-4">
+                        <input
+                            type="file"
+                            ref={pdfFileRef}
+                            accept=".pdf,application/pdf"
+                            onChange={handlePdfFileUpload}
+                            className="hidden"
+                            id="pdf-file-upload"
+                        />
+                        <label
+                            htmlFor="pdf-file-upload"
+                            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-dashed border-peacock-medium/30 text-peacock-medium font-semibold text-sm cursor-pointer hover:bg-peacock-medium/5 transition ${uploadingPdf ? "opacity-50 pointer-events-none" : ""}`}
+                        >
+                            {uploadingPdf ? (
+                                <>
+                                    <span className="w-4 h-4 border-2 border-peacock-medium/30 border-t-peacock-medium rounded-full animate-spin"></span>
+                                    Uploading...
+                                </>
+                            ) : (
+                                <>
+                                    📁 Upload PDF from Folder
+                                </>
+                            )}
+                        </label>
+                        {!newDocLabel && (
+                            <p className="text-xs text-gray-400 mt-1">Enter a document label above before uploading a PDF file.</p>
+                        )}
                     </div>
 
                     <div className="space-y-2">

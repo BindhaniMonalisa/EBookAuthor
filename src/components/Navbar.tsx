@@ -12,31 +12,25 @@ export default function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
-        // Check if auth_token cookie exists
-        const checkAuth = () => {
-            const cookies = document.cookie.split(';');
-            const authCookie = cookies.find(cookie => cookie.trim().startsWith('auth_token='));
-
-            if (authCookie) {
-                setIsAuthenticated(true);
-                // Try to decode the token to get the role (basic parsing)
-                try {
-                    const token = authCookie.split('=')[1];
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    setUserRole(payload.role);
-                } catch (error) {
-                    console.error("Error parsing token:", error);
+        const checkAuth = async () => {
+            try {
+                const res = await fetch('/api/auth/me');
+                const data = await res.json();
+                if (data.success && data.data.isAuthenticated) {
+                    setIsAuthenticated(true);
+                    setUserRole(data.data.role);
+                } else {
+                    setIsAuthenticated(false);
+                    setUserRole(null);
                 }
-            } else {
+            } catch (error) {
+                console.error("Error checking auth:", error);
                 setIsAuthenticated(false);
                 setUserRole(null);
             }
         };
 
         checkAuth();
-        // Recheck on pathname change
-        const interval = setInterval(checkAuth, 1000);
-        return () => clearInterval(interval);
     }, [pathname]);
 
     const handleLogout = async () => {
@@ -72,7 +66,11 @@ export default function Navbar() {
                         Home
                         <span className={`absolute bottom-0 left-0 h-0.5 bg-peacock-gold transition-all duration-300 ${pathname === "/" ? "w-full" : "w-0 group-hover:w-full"}`}></span>
                     </Link>
-                    <Link href="/about" className="text-peacock-navy font-bold hover:text-peacock-medium transition py-1 relative group">
+                    <Link href="/books" className={`text-peacock-navy font-bold hover:text-peacock-medium transition relative py-1 group ${pathname === "/books" || pathname.startsWith("/books/") ? "text-peacock-medium" : ""}`}>
+                        Books
+                        <span className={`absolute bottom-0 left-0 h-0.5 bg-peacock-gold transition-all duration-300 ${pathname === "/books" || pathname.startsWith("/books/") ? "w-full" : "w-0 group-hover:w-full"}`}></span>
+                    </Link>
+                    <Link href="/about" className={`text-peacock-navy font-bold hover:text-peacock-medium transition py-1 relative group ${pathname === "/about" ? "text-peacock-medium" : ""}`}>
                         About
                         <span className="absolute bottom-0 left-0 h-0.5 bg-peacock-gold w-0 group-hover:w-full transition-all duration-300"></span>
                     </Link>
@@ -142,6 +140,13 @@ export default function Navbar() {
                         onClick={() => setIsMobileMenuOpen(false)}
                     >
                         About
+                    </Link>
+                    <Link
+                        href="/books"
+                        className={`text-peacock-navy font-bold hover:text-peacock-medium transition py-2 border-b border-gray-100 ${pathname === "/books" || pathname.startsWith("/books/") ? "text-peacock-medium" : ""}`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        Books
                     </Link>
                     <Link
                         href="/contact"

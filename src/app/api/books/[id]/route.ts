@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Book from "@/models/Book";
+import Author from "@/models/Author";
 import { getAuthUser } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/responseHandler";
 import { z } from "zod";
@@ -26,8 +27,10 @@ const bookUpdateSchema = z.object({
 export async function GET(req: NextRequest, { params }: { params: any }) {
     try {
         await connectDB();
+        // Ensure Author model is registered before populating
+        Author;
         const { id } = await params;
-        const book = await Book.findById(id);
+        const book = await Book.findById(id).populate("authorId", "name profileImage");
         if (!book) return errorResponse("Book not found", 404);
         return successResponse(book);
     } catch (error: any) {

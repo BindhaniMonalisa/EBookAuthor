@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
-import { uploadImage } from "@/lib/cloudinary";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 import { successResponse, errorResponse } from "@/lib/responseHandler";
 
 export async function POST(req: NextRequest) {
@@ -16,11 +17,23 @@ export async function POST(req: NextRequest) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Convert to base64 for Cloudinary uploadImage util
-        const fileBase64 = `data:${file.type};base64,${buffer.toString("base64")}`;
-        const imageUrl = await uploadImage(fileBase64);
+        // Create a unique filename
+        const timestamp = Date.now();
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const filename = `${timestamp}_${safeName}`;
 
-        return successResponse({ url: imageUrl }, "File uploaded successfully");
+        // Ensure uploads directory exists
+        const uploadsDir = path.join(process.cwd(), "public", "uploads");
+        await mkdir(uploadsDir, { recursive: true });
+
+        // Write file to public/uploads
+        const filePath = path.join(uploadsDir, filename);
+        await writeFile(filePath, buffer);
+
+        // Return the public URL
+        const fileUrl = `/uploads/${filename}`;
+
+        return successResponse({ url: fileUrl }, "File uploaded successfully");
     } catch (error: any) {
         console.error("Upload error:", error);
         return errorResponse(error.message);

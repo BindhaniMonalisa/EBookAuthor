@@ -44,13 +44,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </Link>
                     ))}
                 </nav>
-
-                <button
-                    onClick={() => router.push("/login")}
-                    className="mt-10 flex items-center gap-4 p-4 rounded-xl text-red-100 hover:bg-red-400/20 transition"
-                >
-                    <span>Logout</span>
-                </button>
             </aside>
 
             {/* Main Content */}

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Book from "@/models/Book";
+import Author from "@/models/Author";
 import { getAuthUser } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/lib/responseHandler";
 import { z } from "zod";
@@ -24,6 +25,8 @@ const bookSchema = z.object({
 export async function GET(req: NextRequest) {
     try {
         await connectDB();
+        // Ensure Author model is registered before populating
+        Author;
         const user = await getAuthUser();
 
         let query = {};
@@ -35,7 +38,7 @@ export async function GET(req: NextRequest) {
             query = { isStock: true }; // Public sees in-stock books
         }
 
-        const books = await Book.find(query).sort({ createdAt: -1 });
+        const books = await Book.find(query).populate("authorId", "name profileImage").sort({ createdAt: -1 });
         return successResponse(books);
     } catch (error: any) {
         return errorResponse(error.message);

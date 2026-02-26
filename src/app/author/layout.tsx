@@ -58,14 +58,6 @@ export default function AuthorLayout({ children }: { children: React.ReactNode }
                         </Link>
                     ))}
                 </nav>
-
-                <button
-                    onClick={handleLogout}
-                    className="mt-10 flex items-center gap-4 p-4 rounded-xl text-red-400 hover:bg-red-400/10 transition font-bold group"
-                >
-                    <span className="group-hover:translate-x-1 transition-transform">🚪</span>
-                    <span>Logout</span>
-                </button>
             </aside>
 
             {/* Main Content */}
